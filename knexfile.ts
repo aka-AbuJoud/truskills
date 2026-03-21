@@ -15,8 +15,8 @@ const config: { [key: string]: Knex.Config } = {
     client: 'postgresql',
     connection: process.env.DATABASE_URL,
     migrations: {
-      directory: './src/database/migrations',
-      extension: 'ts',
+      directory: './dist/src/database/migrations',
+      extension: 'js',
     },
     pool: { min: 2, max: 10 },
   },
@@ -25,8 +25,8 @@ const config: { [key: string]: Knex.Config } = {
     client: 'postgresql',
     connection: process.env.DATABASE_URL,
     migrations: {
-      directory: './src/database/migrations',
-      extension: 'ts',
+      directory: './dist/src/database/migrations',
+      extension: 'js',
     },
     pool: { min: 2, max: 20 },
     acquireConnectionTimeout: 10000,
