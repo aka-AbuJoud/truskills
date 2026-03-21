@@ -7,14 +7,10 @@ import { INotificationAdapter, NotificationPayload, NotificationResult } from '.
 export class RealNotificationAdapter implements INotificationAdapter {
   readonly isMock = false as const;
 
-  private readonly apiKey: string;
+  private readonly apiKey: string | undefined;
 
   constructor() {
-    const key = process.env.NOTIFICATION_API_KEY;
-    if (!key) {
-      throw new Error('RealNotificationAdapter: NOTIFICATION_API_KEY is required.');
-    }
-    this.apiKey = key;
+    this.apiKey = process.env.NOTIFICATION_API_KEY;
   }
 
   async send(_notification: NotificationPayload): Promise<NotificationResult> {

@@ -7,17 +7,12 @@ import { IVideoAdapter, VideoSession, VideoRecording } from './IVideoAdapter';
 export class RealVideoAdapter implements IVideoAdapter {
   readonly isMock = false as const;
 
-  private readonly endpoint: string;
-  private readonly apiKey: string;
+  private readonly endpoint: string | undefined;
+  private readonly apiKey: string | undefined;
 
   constructor() {
-    const endpoint = process.env.VIDEO_CDN_ENDPOINT;
-    const key = process.env.VIDEO_API_KEY;
-    if (!endpoint || !key) {
-      throw new Error('RealVideoAdapter: VIDEO_CDN_ENDPOINT and VIDEO_API_KEY are required.');
-    }
-    this.endpoint = endpoint;
-    this.apiKey = key;
+    this.endpoint = process.env.VIDEO_CDN_ENDPOINT;
+    this.apiKey = process.env.VIDEO_API_KEY;
   }
 
   async createSession(_params: {

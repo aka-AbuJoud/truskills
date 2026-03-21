@@ -20,17 +20,15 @@ const MOYASAR_API_BASE = 'https://api.moyasar.com/v1';
 export class SandboxPaymentAdapter implements IPaymentAdapter {
   readonly isMock = true as const; // intentional: blocks production boot
 
-  private readonly apiKey: string;
+  private readonly apiKey: string | undefined;
 
   constructor() {
-    const key = process.env.PAYMENT_SANDBOX_API_KEY;
-    if (!key) {
-      throw new Error('SandboxPaymentAdapter: PAYMENT_SANDBOX_API_KEY is required.');
-    }
-    this.apiKey = key;
+    // Key validated lazily at first API call. Constructor must not throw — see RealPaymentAdapter.
+    this.apiKey = process.env.PAYMENT_SANDBOX_API_KEY;
   }
 
   private get authHeader(): string {
+    if (!this.apiKey) throw new Error('SandboxPaymentAdapter: PAYMENT_SANDBOX_API_KEY is not set.');
     return 'Basic ' + Buffer.from(`${this.apiKey}:`).toString('base64');
   }
 
@@ -122,6 +120,7 @@ export class SandboxPaymentAdapter implements IPaymentAdapter {
   }
 
   async ping(): Promise<boolean> {
+    if (!this.apiKey) return false;
     try {
       const res = await fetch(`${MOYASAR_API_BASE}/payments?per_page=1`, {
         headers: { 'Authorization': this.authHeader },

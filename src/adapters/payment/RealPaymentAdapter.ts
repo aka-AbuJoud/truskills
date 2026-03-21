@@ -17,26 +17,16 @@ import {
 export class RealPaymentAdapter implements IPaymentAdapter {
   readonly isMock = false as const;
 
-  private readonly apiKey: string;
-  private readonly apiSecret: string;
+  private readonly apiKey: string | undefined;
+  private readonly apiSecret: string | undefined;
   private readonly baseUrl: string;
 
   constructor() {
-    const apiKey = process.env.PAYMENT_GATEWAY_API_KEY;
-    const apiSecret = process.env.PAYMENT_GATEWAY_SECRET;
-
-    if (!apiKey || !apiSecret) {
-      // Production safety validator Check 3 catches this at bootstrap.
-      // This guard is a redundant fail-fast for early construction.
-      throw new Error(
-        'RealPaymentAdapter: PAYMENT_GATEWAY_API_KEY and PAYMENT_GATEWAY_SECRET are required. ' +
-        'Ensure production credentials are provisioned before constructing this adapter.',
-      );
-    }
-
-    this.apiKey = apiKey;
-    this.apiSecret = apiSecret;
-    // Payment gateway base URL — set per vendor; currently placeholder until vendor confirmed by Ops/Director
+    // Credentials validated at runtime by production safety validator (Check 3).
+    // Constructor must not throw — unhandled throws during buildAdapters() crash the process
+    // before the safety validator can produce a clean process.exit(1) with diagnostics.
+    this.apiKey = process.env.PAYMENT_GATEWAY_API_KEY;
+    this.apiSecret = process.env.PAYMENT_GATEWAY_SECRET;
     this.baseUrl = process.env.PAYMENT_GATEWAY_BASE_URL ?? 'https://api.paymentgateway.sa/v1';
   }
 
@@ -90,8 +80,6 @@ export class RealPaymentAdapter implements IPaymentAdapter {
   }
 
   async ping(): Promise<boolean> {
-    // [VENDOR_IMPL] GET /health or equivalent
-    // For now: return true if credentials are structurally present (already validated in constructor)
     return !!(this.apiKey && this.apiSecret);
   }
 

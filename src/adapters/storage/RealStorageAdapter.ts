@@ -7,17 +7,12 @@ import { IStorageAdapter, UploadResult } from './IStorageAdapter';
 export class RealStorageAdapter implements IStorageAdapter {
   readonly isMock = false as const;
 
-  private readonly bucketName: string;
-  private readonly accessKey: string;
+  private readonly bucketName: string | undefined;
+  private readonly accessKey: string | undefined;
 
   constructor() {
-    const bucket = process.env.STORAGE_BUCKET_NAME;
-    const key = process.env.STORAGE_ACCESS_KEY;
-    if (!bucket || !key) {
-      throw new Error('RealStorageAdapter: STORAGE_BUCKET_NAME and STORAGE_ACCESS_KEY are required.');
-    }
-    this.bucketName = bucket;
-    this.accessKey = key;
+    this.bucketName = process.env.STORAGE_BUCKET_NAME;
+    this.accessKey = process.env.STORAGE_ACCESS_KEY;
   }
 
   async upload(_params: { key: string; buffer: Buffer; contentType: string; isPublic?: boolean }): Promise<UploadResult> {
