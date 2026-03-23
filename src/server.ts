@@ -25,10 +25,15 @@ if (nodeEnv === 'staging') {
 // ── Database ──────────────────────────────────────────────────────────────────
 const db = knex(knexConfig[nodeEnv] ?? knexConfig['development']);
 
-// ── Health check ──────────────────────────────────────────────────────────────
+// ── Health check (deploy gate — liveness only) ────────────────────────────────
 let adapters: ReturnType<typeof buildAdapters> | null = null;
 
-app.get('/health', async (_req, res) => {
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok', env: nodeEnv });
+});
+
+// ── Readiness check (adapter + db ping — not used for Railway deploy health) ──
+app.get('/ready', async (_req, res) => {
   const [payment, storage, notification, video, db_ok] = await Promise.all([
     adapters?.payment.ping().catch(() => false) ?? false,
     adapters?.storage.ping().catch(() => false) ?? false,
