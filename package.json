@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/src/server.js",
     "migrate": "knex migrate:latest --knexfile knexfile.ts",
-    "migrate:deploy": "knex migrate:latest --knexfile dist/knexfile.js",
+    "migrate:deploy": "knex migrate:latest --knexfile knexfile.js",
     "migrate:rollback": "knex migrate:rollback --knexfile knexfile.ts",
     "migrate:status": "knex migrate:status --knexfile knexfile.ts"
   },

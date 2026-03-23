@@ -3,7 +3,7 @@ builder = "nixpacks"
 buildCommand = "npm run build"
 
 [deploy]
-startCommand = "npm run build && NODE_ENV=${NODE_ENV:-staging} npm run migrate:deploy && NODE_ENV=${NODE_ENV:-staging} npm start"
+startCommand = "npm run build && NODE_ENV=${NODE_ENV:-staging} npm run migrate:deploy && npm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 30
 restartPolicyType = "on_failure"
