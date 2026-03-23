@@ -26,19 +26,18 @@ if (nodeEnv === 'staging') {
 const db = knex(knexConfig[nodeEnv] ?? knexConfig['development']);
 
 // ── Health check (deploy gate — liveness only) ────────────────────────────────
-let adapters: ReturnType<typeof buildAdapters> | null = null;
-
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', env: nodeEnv });
 });
 
 // ── Readiness check (adapter + db ping — not used for Railway deploy health) ──
 app.get('/ready', async (_req, res) => {
+  const a = buildAdapters();
   const [payment, storage, notification, video, db_ok] = await Promise.all([
-    adapters?.payment.ping().catch(() => false) ?? false,
-    adapters?.storage.ping().catch(() => false) ?? false,
-    adapters?.notification.ping().catch(() => false) ?? false,
-    adapters?.video.ping().catch(() => false) ?? false,
+    a.payment.ping().catch(() => false),
+    a.storage.ping().catch(() => false),
+    a.notification.ping().catch(() => false),
+    a.video.ping().catch(() => false),
     db.raw('SELECT 1').then(() => true).catch(() => false),
   ]);
   const allOk = payment && storage && notification && video && db_ok;
@@ -71,7 +70,7 @@ app.listen(port, '0.0.0.0', async () => {
   console.log(`TruSkills API — port ${port} [${nodeEnv}]`);
 
   try {
-    adapters = buildAdapters();
+    const adapters = buildAdapters();
     await runProductionSafetyValidatorsOrExit(adapters.validationTargets());
   } catch (err) {
     console.error('Startup validation failed:', err);
