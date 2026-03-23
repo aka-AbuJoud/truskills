@@ -67,14 +67,13 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-app.listen(port, async () => {
-  // eslint-disable-next-line no-console
+app.listen(port, '0.0.0.0', async () => {
   console.log(`TruSkills API — port ${port} [${nodeEnv}]`);
+
   try {
     adapters = buildAdapters();
     await runProductionSafetyValidatorsOrExit(adapters.validationTargets());
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('Startup validation failed:', err);
   }
 });
