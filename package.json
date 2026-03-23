@@ -19,6 +19,8 @@
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
     "pg": "^8.11.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -29,8 +31,6 @@
     "@types/node": "^20.11.0",
     "@types/pg": "^8.10.9",
     "@types/uuid": "^9.0.7",
-    "ts-node": "^10.9.2",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.3.3"
+    "ts-node-dev": "^2.0.0"
   }
 }
