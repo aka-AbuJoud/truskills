@@ -52,26 +52,26 @@ export class AuthService {
       })
       .returning('*');
 
-    // Auto-create provider record for PROVIDER role
     let providerId: string | undefined;
     if (role === 'PROVIDER') {
       const [provider] = await this.db('providers')
         .insert({
           user_id: user.id,
-          provider_type: 'INSTRUCTOR', // default; can change during activation
+          provider_type: 'INSTRUCTOR',
           display_name: fullName,
           activation_status: 'NOT_STARTED',
           created_at: new Date(),
           updated_at: new Date(),
         })
         .returning('id');
+
       providerId = provider.id;
     }
 
     const tokens = await this._issueTokens(user.id, user.email, role, providerId);
 
     return {
-      user: { ...user, provider_id: providerId } as UserRecord,
+      user: this._sanitizeUser(user, providerId),
       tokens,
     };
   }
@@ -85,7 +85,6 @@ export class AuthService {
 
     if (!user.is_active) throw new Error('ACCOUNT_INACTIVE');
 
-    // Resolve provider_id if PROVIDER
     let providerId: string | undefined;
     if (user.role === 'PROVIDER') {
       const provider = await this.db('providers').where({ user_id: user.id }).first();
@@ -93,7 +92,11 @@ export class AuthService {
     }
 
     const tokens = await this._issueTokens(user.id, user.email, user.role, providerId);
-    return { user: { ...user, provider_id: providerId } as UserRecord, tokens };
+
+    return {
+      user: this._sanitizeUser(user, providerId),
+      tokens,
+    };
   }
 
   async refresh(refreshToken: string): Promise<AuthTokens> {
@@ -115,7 +118,6 @@ export class AuthService {
       providerId = provider?.id;
     }
 
-    // Revoke used token (rotation)
     await this.db('refresh_tokens')
       .where({ id: record.id })
       .update({ revoked_at: new Date() });
@@ -130,7 +132,16 @@ export class AuthService {
       .update({ revoked_at: new Date() });
   }
 
-  // ── Private helpers ────────────────────────────────────────────────────────
+  private _sanitizeUser(user: any, providerId?: string): UserRecord {
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      full_name: user.full_name,
+      is_active: user.is_active,
+      ...(providerId ? { provider_id: providerId } : {}),
+    };
+  }
 
   private async _issueTokens(
     userId: string,
