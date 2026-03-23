@@ -17,13 +17,20 @@ export function buildFinanceRouter(financeService: FinanceService): Router {
     }
   });
 
-  // GET /finance/bookings/:bookingId/transactions — seeker or provider views booking transactions
+  // GET /finance/bookings/:bookingId/transactions — seeker or provider on that booking only
   router.get('/bookings/:bookingId/transactions', requireAuth, async (req: Request, res: Response) => {
     try {
-      const transactions = await financeService.getBookingTransactions(req.params.bookingId);
+      const transactions = await financeService.getBookingTransactions(
+        req.params.bookingId,
+        req.user!.id,
+        req.user!.provider_id,
+      );
       res.json(transactions);
     } catch (e: any) {
-      res.status(500).json({ error: e.message });
+      const status = e.message.startsWith('NOT_FOUND') ? 404
+        : e.message.startsWith('FORBIDDEN') ? 403
+        : 500;
+      res.status(status).json({ error: e.message });
     }
   });
 

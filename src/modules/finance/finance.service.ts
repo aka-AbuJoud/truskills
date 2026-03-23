@@ -135,8 +135,21 @@ export class FinanceService {
     };
   }
 
-  // Seeker view: transactions for a booking
-  async getBookingTransactions(bookingId: string): Promise<FinanceTransaction[]> {
+  // Transactions for a booking — caller must be the seeker or provider on that booking
+  async getBookingTransactions(
+    bookingId: string,
+    callerId: string,
+    callerProviderId?: string,
+  ): Promise<FinanceTransaction[]> {
+    const booking = await this.db('bookings').where({ id: bookingId }).first();
+    if (!booking) throw new Error(`NOT_FOUND: Booking ${bookingId}`);
+
+    const isSeeker = booking.seeker_id === callerId;
+    const isProvider = callerProviderId && booking.provider_id === callerProviderId;
+    if (!isSeeker && !isProvider) {
+      throw new Error('FORBIDDEN: Not authorized to view these transactions');
+    }
+
     return this.repo.findByBookingId(bookingId);
   }
 
