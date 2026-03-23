@@ -15,7 +15,7 @@ const config: { [key: string]: Knex.Config } = {
     client: 'postgresql',
     connection: process.env.DATABASE_URL,
     migrations: {
-      directory: './dist/src/database/migrations',
+      directory: './src/database/migrations',
       extension: 'js',
     },
     pool: { min: 2, max: 10 },
@@ -25,7 +25,7 @@ const config: { [key: string]: Knex.Config } = {
     client: 'postgresql',
     connection: process.env.DATABASE_URL,
     migrations: {
-      directory: './dist/src/database/migrations',
+      directory: './src/database/migrations',
       extension: 'js',
     },
     pool: { min: 2, max: 20 },
