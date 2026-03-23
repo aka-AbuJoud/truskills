@@ -11,7 +11,9 @@ export function buildFinanceRouter(financeService: FinanceService): Router {
       const providerId = req.user!.provider_id;
       if (!providerId) return res.status(403).json({ error: 'FORBIDDEN: Provider only' });
       const summary = await financeService.getProviderFinanceSummary(providerId);
-      res.json(summary);
+      // Strip ops_note — internal field not for provider consumption
+      const sanitizedTransactions = summary.transactions.map(({ ops_note: _n, ...rest }) => rest);
+      res.json({ ...summary, transactions: sanitizedTransactions });
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
@@ -25,7 +27,9 @@ export function buildFinanceRouter(financeService: FinanceService): Router {
         req.user!.id,
         req.user!.provider_id,
       );
-      res.json(transactions);
+      // Strip ops_note — internal field not for seeker/provider consumption
+      const sanitized = transactions.map(({ ops_note: _n, ...rest }) => rest);
+      res.json(sanitized);
     } catch (e: any) {
       const status = e.message.startsWith('NOT_FOUND') ? 404
         : e.message.startsWith('FORBIDDEN') ? 403
