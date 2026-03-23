@@ -27,7 +27,10 @@ const db = knex(knexConfig[nodeEnv] ?? knexConfig['development']);
 
 // ── Health check (deploy gate — liveness only) ────────────────────────────────
 app.get('/health', (_req, res) => {
-  res.status(200).json({ status: 'ok', env: nodeEnv });
+  res.status(200).json({
+    status: 'ok',
+    env: nodeEnv,
+  });
 });
 
 // ── Readiness check (adapter + db ping — not used for Railway deploy health) ──
