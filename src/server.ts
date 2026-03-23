@@ -25,17 +25,15 @@ if (nodeEnv === 'staging') {
 // ── Database ──────────────────────────────────────────────────────────────────
 const db = knex(knexConfig[nodeEnv] ?? knexConfig['development']);
 
-// ── Adapters + production safety validation ───────────────────────────────────
-const adapters = buildAdapters();
-runProductionSafetyValidatorsOrExit(adapters.validationTargets());
-
 // ── Health check ──────────────────────────────────────────────────────────────
+let adapters: ReturnType<typeof buildAdapters> | null = null;
+
 app.get('/health', async (_req, res) => {
   const [payment, storage, notification, video, db_ok] = await Promise.all([
-    adapters.payment.ping().catch(() => false),
-    adapters.storage.ping().catch(() => false),
-    adapters.notification.ping().catch(() => false),
-    adapters.video.ping().catch(() => false),
+    adapters?.payment.ping().catch(() => false) ?? false,
+    adapters?.storage.ping().catch(() => false) ?? false,
+    adapters?.notification.ping().catch(() => false) ?? false,
+    adapters?.video.ping().catch(() => false) ?? false,
     db.raw('SELECT 1').then(() => true).catch(() => false),
   ]);
   const allOk = payment && storage && notification && video && db_ok;
@@ -64,9 +62,16 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 });
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-app.listen(port, () => {
+app.listen(port, async () => {
   // eslint-disable-next-line no-console
   console.log(`TruSkills API — port ${port} [${nodeEnv}]`);
+  try {
+    adapters = buildAdapters();
+    await runProductionSafetyValidatorsOrExit(adapters.validationTargets());
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Startup validation failed:', err);
+  }
 });
 
 export default app;
